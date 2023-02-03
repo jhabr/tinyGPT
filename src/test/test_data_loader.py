@@ -46,5 +46,7 @@ class DataLoaderTests(unittest.TestCase):
         # if input x is [52], output y = [1]
         # x: [52, 1] => y: 58
         # x: [52, 1, 58] => y: 56
+        #
+        # => 32 independent examples packed in one batch
         self.assertEqual((4, 8), y.shape)
 

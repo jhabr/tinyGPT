@@ -6,6 +6,8 @@ from src.tinyGPT.tokenizer import Tokenizer
 
 
 class DataLoader:
+    torch.manual_seed(42)
+
     def __init__(self, file_path: str, tokenizer: Tokenizer) -> None:
         """
         A data loader for the tinyGPT model.
