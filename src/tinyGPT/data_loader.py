@@ -2,6 +2,7 @@ from typing import Union
 
 import torch
 
+from src.tinyGPT.backend import Backend
 from src.tinyGPT.tokenizer import Tokenizer
 
 
@@ -26,6 +27,7 @@ class DataLoader:
         self.text = None
         self.train_dataset = None
         self.valid_dataset = None
+        self.device = Backend.device()
 
     def load_corpus(self) -> str:
         """
@@ -57,8 +59,8 @@ class DataLoader:
         data = torch.tensor(tokens, dtype=torch.long)
 
         no_tokens = int(train_split_size * len(data))
-        self.train_dataset = data[:no_tokens]
-        self.valid_dataset = data[no_tokens:]
+        self.train_dataset = data[:no_tokens].to(self.device)
+        self.valid_dataset = data[no_tokens:].to(self.device)
 
         return self.train_dataset, self.valid_dataset
 
@@ -85,8 +87,12 @@ class DataLoader:
         """
         data = self.train_dataset if split == "train" else self.valid_dataset
         indices = torch.randint(high=len(data) - block_size, size=(batch_size,))
-        x = torch.stack([data[index : index + block_size] for index in indices])
+        x = torch.stack([data[index : index + block_size] for index in indices]).to(
+            self.device
+        )
         y = torch.stack(
             [data[index + 1 : index + block_size + 1] for index in indices]
+        ).to(
+            self.device
         )  # offset by 1 == target is the next character in the sequence
         return x, y

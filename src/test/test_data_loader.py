@@ -11,7 +11,7 @@ class DataLoaderTests(unittest.TestCase):
             file_path=os.path.join(
                 os.getcwd(), "..", "..", "data", "tiny_shakespeare.txt"
             ),
-            tokenizer=Tokenizer()
+            tokenizer=Tokenizer(),
         )
         self.data_loader.load_corpus()
 
@@ -50,3 +50,5 @@ class DataLoaderTests(unittest.TestCase):
         # => 32 independent examples packed in one batch
         self.assertEqual((4, 8), y.shape)
 
+    def test_device(self) -> None:
+        self.assertEqual("mps", self.data_loader.device.type)
