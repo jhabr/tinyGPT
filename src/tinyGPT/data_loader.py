@@ -77,7 +77,7 @@ class DataLoader:
             split: str
                 The split of the data to use. Either "train" or "valid".
             block_size: int
-                The size of the block of data to return.
+                The size of the block of data to return - number of tokens to consider at once.
             batch_size: int
                 The size of the batch to return.
 

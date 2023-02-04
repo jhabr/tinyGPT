@@ -15,15 +15,15 @@ def main():
     data_loader = DataLoader(file_path=file_path, tokenizer=tokenizer)
     data_loader.load_corpus()
     data_loader.create_datasets()
-    model = TinyGPT(embedding_dim=32, vocab_size=len(tokenizer.vocabulary)).to(
-        Backend.device()
-    )
+    model = TinyGPT(
+        vocab_size=len(tokenizer.vocabulary), block_size=8, embedding_dim=32
+    ).to(Backend.device())
     trainer = Trainer(
         model=model,
         data_loader=data_loader,
         optimizer=torch.optim.AdamW(params=model.parameters(), lr=1e-3),
     )
-    trainer.fit(epochs=100)
+    trainer.fit(epochs=1_000)
 
 
 if __name__ == "__main__":
