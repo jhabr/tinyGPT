@@ -99,5 +99,20 @@ class TinyGPT(nn.Module):
 
         return logits, loss
 
-    def generate(self):
-        pass
+    def generate(self, index: torch.Tensor, max_tokens: int):
+        for _ in range(max_tokens):
+            # guard clause to avoid out of index if index should be langer than block size
+            context = index[:, -self.block_size:]
+            logits, loss = self(context)
+            # focus only on the last time step
+            logits = logits[:, -1, :]  # => (B, C)
+            probabilities = torch.softmax(logits, dim=-1)
+            # sample from the distribution
+            sample = torch.multinomial(probabilities, num_samples=1)  # => (B, 1)
+            # concat index with new generated sample
+            index = torch.cat((index, sample), dim=1)  # => (B, T+1)
+
+        return index
+
+
+
