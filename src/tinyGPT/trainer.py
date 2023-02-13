@@ -39,7 +39,9 @@ class Trainer:
             if iteration % eval_interval == 0 or iter == iterations - 1:
                 loss = self._estimate_loss()
                 print(
-                    f"[INFO]: step {iteration} - train loss: {round(loss['train'], 4)}, val loss: {round(loss['valid'], 4)}"
+                    f"[INFO]: step {iteration} - "
+                    f"train loss: {round(loss['train'], 4)}, "
+                    f"val loss: {round(loss['valid'], 4)}"
                 )
 
     def _estimate_loss(self, eval_iterations: int = 200) -> dict:
