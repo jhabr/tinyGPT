@@ -22,8 +22,10 @@ def main():
         model=model,
         data_loader=data_loader,
         optimizer=torch.optim.AdamW(params=model.parameters(), lr=1e-3),
+        tokenizer=tokenizer,
     )
-    trainer.fit(epochs=1_000)
+    trainer.fit(epochs=5_000)
+    trainer.test()
 
 
 if __name__ == "__main__":
