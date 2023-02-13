@@ -27,20 +27,20 @@ class AttentionHead(nn.Module):
         )
 
     def forward(self, x) -> torch.Tensor:
-        B, T, C = x.shape
+        B, T, C = x.shape  # (B:4, T:8, C:32)
         k = self.key(x)  # (B, T, C)
         q = self.key(x)  # (B, T, C)
 
         # compute attention scores == affinities
-        weights = q @ k.transpose(-2, -1)  # (B, T, 16) @ (B, 16, T) => (B, T, T)
+        weights = q @ k.transpose(-2, -1)  # (B:4, T:8, 16) @ (B, 16, T) => (B, T, T)
         # normalize
         weights *= self.head_size**-0.5
         weights = weights.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
-        weights = torch.softmax(weights, dim=-1)
+        weights = torch.softmax(weights, dim=-1)  # (B:4, T:8, T:8)
 
         # value
-        v = self.value(x)
-        out = weights @ v
+        v = self.value(x)  # (B:4, T:8, C:32)
+        out = weights @ v  # (B:4, T:8, C:32)
 
         return out
 
@@ -69,7 +69,7 @@ class TinyGPT(nn.Module):
             num_embeddings=block_size, embedding_dim=self.embedding_dim
         )
         self.self_attention_head = AttentionHead(
-            embedding_dim=self.embedding_dim, head_size=16, block_size=self.block_size
+            embedding_dim=self.embedding_dim, head_size=self.embedding_dim, block_size=self.block_size
         )
         # language model head
         self.lm_head = nn.Linear(
@@ -84,7 +84,7 @@ class TinyGPT(nn.Module):
         positional_embeddings = self.position_embedding_table(
             torch.arange(T, device=self.device)
         )  # (T, C)
-        x = token_embeddings + positional_embeddings  # (B, T, C)
+        x = token_embeddings + positional_embeddings  # (B:4, T:8, C:32)
         x = self.self_attention_head(x)
         logits = self.lm_head(x)  # (B, T, C)
 
