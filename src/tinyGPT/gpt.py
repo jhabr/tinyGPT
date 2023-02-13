@@ -69,6 +69,19 @@ class MultiHeadAttention(nn.Module):
         return torch.cat([head(x) for head in self.heads], dim=-1)  # concatenate over the C dimension
 
 
+class FeedForward(nn.Module):
+
+    def __init__(self, embedding_dim: int = 32) -> None:
+        super().__init__()
+        self.sequential = nn.Sequential(
+            nn.Linear(in_features=embedding_dim, out_features=embedding_dim),
+            nn.ReLU()
+        )
+
+    def forward(self, x) -> torch.Tensor:
+        return self.sequential(x)
+
+
 class TinyGPT(nn.Module):
     def __init__(
         self, vocab_size: int, block_size: int = 8, embedding_dim: int = 32
@@ -98,6 +111,9 @@ class TinyGPT(nn.Module):
             head_size=self.embedding_dim // 4,  # 4 heads of 8-dim self-attention
             block_size=self.block_size,
         )
+
+        self.feed_forward = FeedForward(embedding_dim=self.embedding_dim)
+
         # language model head
         self.lm_head = nn.Linear(
             in_features=self.embedding_dim, out_features=self.vocab_size
@@ -112,7 +128,8 @@ class TinyGPT(nn.Module):
             torch.arange(T, device=self.device)
         )  # (T, C)
         x = token_embeddings + positional_embeddings  # (B:4, T:8, C:32)
-        x = self.multi_head_attention(x)
+        x = self.multi_head_attention(x)  # (B, T, C)
+        x = self.feed_forward(x)  # (B, T, C)
         logits = self.lm_head(x)  # (B, T, C)
 
         if targets is None:
