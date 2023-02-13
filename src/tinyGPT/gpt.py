@@ -45,6 +45,30 @@ class AttentionHead(nn.Module):
         return out
 
 
+class MultiHeadAttention(nn.Module):
+    def __init__(
+        self,
+        no_heads: int = 4,
+        embedding_dim: int = 32,
+        head_size: int = 32,
+        block_size: int = 8,
+    ) -> None:
+        super().__init__()
+        self.heads = nn.ModuleList(
+            modules=[
+                AttentionHead(
+                    embedding_dim=embedding_dim,
+                    head_size=head_size,
+                    block_size=block_size,
+                )
+                for _ in range(no_heads)
+            ]
+        )
+
+    def forward(self, x) -> torch.Tensor:
+        return torch.cat([head(x) for head in self.heads], dim=-1)  # concatenate over the C dimension
+
+
 class TinyGPT(nn.Module):
     def __init__(
         self, vocab_size: int, block_size: int = 8, embedding_dim: int = 32
@@ -68,8 +92,11 @@ class TinyGPT(nn.Module):
         self.position_embedding_table = nn.Embedding(
             num_embeddings=block_size, embedding_dim=self.embedding_dim
         )
-        self.self_attention_head = AttentionHead(
-            embedding_dim=self.embedding_dim, head_size=self.embedding_dim, block_size=self.block_size
+        self.multi_head_attention = MultiHeadAttention(
+            no_heads=4,
+            embedding_dim=self.embedding_dim,
+            head_size=self.embedding_dim // 4,  # 4 heads of 8-dim self-attention
+            block_size=self.block_size,
         )
         # language model head
         self.lm_head = nn.Linear(
@@ -85,7 +112,7 @@ class TinyGPT(nn.Module):
             torch.arange(T, device=self.device)
         )  # (T, C)
         x = token_embeddings + positional_embeddings  # (B:4, T:8, C:32)
-        x = self.self_attention_head(x)
+        x = self.multi_head_attention(x)
         logits = self.lm_head(x)  # (B, T, C)
 
         if targets is None:
@@ -102,7 +129,7 @@ class TinyGPT(nn.Module):
     def generate(self, index: torch.Tensor, max_tokens: int):
         for _ in range(max_tokens):
             # guard clause to avoid out of index if index should be langer than block size
-            context = index[:, -self.block_size:]
+            context = index[:, -self.block_size :]
             logits, loss = self(context)
             # focus only on the last time step
             logits = logits[:, -1, :]  # => (B, C)
@@ -113,6 +140,3 @@ class TinyGPT(nn.Module):
             index = torch.cat((index, sample), dim=1)  # => (B, T+1)
 
         return index
-
-
-

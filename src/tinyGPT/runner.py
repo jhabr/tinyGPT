@@ -24,7 +24,7 @@ def main():
         optimizer=torch.optim.AdamW(params=model.parameters(), lr=1e-3),
         tokenizer=tokenizer,
     )
-    trainer.fit(epochs=5_000)
+    trainer.fit(iterations=5_000)
     trainer.test()
 
 
