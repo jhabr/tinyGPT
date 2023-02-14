@@ -20,6 +20,7 @@ class Trainer:
         self.tokenizer = tokenizer
 
     def fit(self, iterations: int = 1_000, eval_interval: int = 500):
+        print(f"[INFO] Trainable params: {round(sum([param.numel() for param in self.model.parameters()])/1e6, 1)}M")
         print("[INFO] Fitting model...")
 
         for iteration in range(iterations):
@@ -45,6 +46,7 @@ class Trainer:
                     f"train loss: {round(loss['train'], 4)}, "
                     f"val loss: {round(loss['valid'], 4)}"
                 )
+        print("[INFO] Done.")
 
     def _estimate_loss(self, eval_iterations: int = 200) -> dict:
         out = {}
