@@ -6,7 +6,11 @@ from src.tinyGPT.backend import Backend
 
 class AttentionHead(nn.Module):
     def __init__(
-        self, embedding_dim: int = 32, head_size: int = 16, block_size: int = 8
+        self,
+        embedding_dim: int = 384,
+        head_size: int = 16,
+        block_size: int = 256,
+        dropout: float = 0.2,
     ) -> None:
         super().__init__()
         self.head_size = head_size
@@ -25,6 +29,7 @@ class AttentionHead(nn.Module):
         self.register_buffer(
             name="tril", tensor=torch.tril(torch.ones(block_size, block_size))
         )
+        self.dropout = nn.Dropout(p=dropout)
 
     def forward(self, x) -> torch.Tensor:
         B, T, C = x.shape  # (B:4, T:8, C:32)
@@ -37,6 +42,7 @@ class AttentionHead(nn.Module):
         weights *= self.head_size**-0.5
         weights = weights.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
         weights = torch.softmax(weights, dim=-1)  # (B:4, T:8, T:8)
+        weights = self.dropout(weights)
 
         # value
         v = self.value(x)  # (B:4, T:8, C:32)
@@ -48,10 +54,11 @@ class AttentionHead(nn.Module):
 class MultiHeadAttention(nn.Module):
     def __init__(
         self,
-        no_heads: int = 4,
-        embedding_dim: int = 32,
+        no_heads: int = 6,
+        embedding_dim: int = 384,
         head_size: int = 32,
-        block_size: int = 8,
+        block_size: int = 256,
+        dropout: float = 0.2,
     ) -> None:
         super().__init__()
         self.heads = nn.ModuleList(
@@ -64,25 +71,31 @@ class MultiHeadAttention(nn.Module):
                 for _ in range(no_heads)
             ]
         )
-        self.projection = nn.Linear(in_features=embedding_dim, out_features=embedding_dim)
+        self.projection = nn.Linear(
+            in_features=embedding_dim, out_features=embedding_dim
+        )
+        self.dropout = nn.Dropout(p=dropout)
 
     def forward(self, x) -> torch.Tensor:
         out = torch.cat(
             [head(x) for head in self.heads], dim=-1
         )  # concatenate over the C dimension
 
-        out = self.projection(out)  # residual connection
+        out = self.dropout(self.projection(out))  # residual connection
         return out
 
 
 class FeedForward(nn.Module):
-    def __init__(self, embedding_dim: int = 32) -> None:
+    def __init__(self, embedding_dim: int = 384, dropout: float = 0.2) -> None:
         super().__init__()
         self.sequential = nn.Sequential(
             # according to paper, the inner layer dim is 4x bigger then the input and output
             nn.Linear(in_features=embedding_dim, out_features=embedding_dim * 4),
             nn.ReLU(),
-            nn.Linear(in_features=embedding_dim * 4, out_features=embedding_dim),  # residual connection as projection
+            nn.Linear(
+                in_features=embedding_dim * 4, out_features=embedding_dim
+            ),  # residual connection as projection
+            nn.Dropout(p=dropout),
         )
 
     def forward(self, x) -> torch.Tensor:
@@ -92,9 +105,9 @@ class FeedForward(nn.Module):
 class Block(nn.Module):
     def __init__(
         self,
-        no_heads: int = 4,
-        embedding_dim: int = 32,
-        block_size: int = 8,
+        no_heads: int = 6,
+        embedding_dim: int = 384,
+        block_size: int = 256,
     ) -> None:
         """
         Transformer block: communication between tokens (multi head self attention),
@@ -124,14 +137,21 @@ class Block(nn.Module):
         self.layer_norm_2 = nn.LayerNorm(normalized_shape=embedding_dim)
 
     def forward(self, x) -> torch.Tensor:
-        x = x + self.multi_head_attention(self.layer_norm_1(x))  # x + => residual connection
+        x = x + self.multi_head_attention(
+            self.layer_norm_1(x)
+        )  # x + => residual connection
         x = x + self.feed_forward(self.layer_norm_2(x))
         return x
 
 
 class TinyGPT(nn.Module):
     def __init__(
-        self, vocab_size: int, block_size: int = 8, embedding_dim: int = 32
+        self,
+        vocab_size: int,
+        block_size: int = 256,
+        embedding_dim: int = 384,
+        no_heads: int = 6,
+        no_layers: int = 6,
     ) -> None:
         """
 
@@ -143,6 +163,8 @@ class TinyGPT(nn.Module):
         self.vocab_size = vocab_size
         self.block_size = block_size
         self.embedding_dim = embedding_dim
+        self.no_layers = no_layers
+        self.no_heads = no_heads
         self.device = Backend.device()
 
         self.token_embedding_table = nn.Embedding(
@@ -155,10 +177,17 @@ class TinyGPT(nn.Module):
         )
 
         self.blocks = nn.Sequential(
-            Block(no_heads=4, block_size=self.block_size, embedding_dim=self.embedding_dim),
-            Block(no_heads=4, block_size=self.block_size, embedding_dim=self.embedding_dim),
-            Block(no_heads=4, block_size=self.block_size, embedding_dim=self.embedding_dim),
+            *[
+                Block(
+                    no_heads=self.no_heads,
+                    block_size=self.block_size,
+                    embedding_dim=self.embedding_dim,
+                )
+                for _ in range(self.no_layers)
+            ]
         )
+
+        self.layer_norm = nn.LayerNorm(normalized_shape=self.embedding_dim)
 
         # language model head
         self.lm_head = nn.Linear(
@@ -175,6 +204,7 @@ class TinyGPT(nn.Module):
         )  # (T, C)
         x = token_embeddings + positional_embeddings  # (B:4, T:8, C:32)
         x = self.blocks(x)
+        x = self.layer_norm(x)
         logits = self.lm_head(x)  # (B, T, C)
 
         if targets is None:

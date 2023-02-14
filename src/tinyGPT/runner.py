@@ -16,7 +16,7 @@ def main():
     data_loader.load_corpus()
     data_loader.create_datasets()
     model = TinyGPT(
-        vocab_size=len(tokenizer.vocabulary), block_size=8, embedding_dim=32
+        vocab_size=len(tokenizer.vocabulary), block_size=256, embedding_dim=384
     ).to(Backend.device())
     trainer = Trainer(
         model=model,

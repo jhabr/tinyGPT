@@ -20,6 +20,8 @@ class Trainer:
         self.tokenizer = tokenizer
 
     def fit(self, iterations: int = 1_000, eval_interval: int = 500):
+        print("[INFO] Fitting model...")
+
         for iteration in range(iterations):
             x_batch, y_batch = self.data_loader.get_batch(split="train")
 

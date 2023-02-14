@@ -67,8 +67,8 @@ class DataLoader:
     def get_batch(
         self,
         split: str = Union["train", "valid"],
-        block_size: int = 8,
-        batch_size: int = 4,
+        block_size: int = 256,
+        batch_size: int = 64,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Returns the next batch of data.
