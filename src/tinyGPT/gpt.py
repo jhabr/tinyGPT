@@ -64,19 +64,25 @@ class MultiHeadAttention(nn.Module):
                 for _ in range(no_heads)
             ]
         )
+        self.projection = nn.Linear(in_features=embedding_dim, out_features=embedding_dim)
 
     def forward(self, x) -> torch.Tensor:
-        return torch.cat(
+        out = torch.cat(
             [head(x) for head in self.heads], dim=-1
         )  # concatenate over the C dimension
+
+        out = self.projection(out)  # residual connection
+        return out
 
 
 class FeedForward(nn.Module):
     def __init__(self, embedding_dim: int = 32) -> None:
         super().__init__()
         self.sequential = nn.Sequential(
-            nn.Linear(in_features=embedding_dim, out_features=embedding_dim),
-            nn.ReLU()
+            # according to paper, the inner layer dim is 4x bigger then the input and output
+            nn.Linear(in_features=embedding_dim, out_features=embedding_dim * 4),
+            nn.ReLU(),
+            nn.Linear(in_features=embedding_dim * 4, out_features=embedding_dim),  # residual connection as projection
         )
 
     def forward(self, x) -> torch.Tensor:
@@ -113,10 +119,13 @@ class Block(nn.Module):
             block_size=block_size,
         )
         self.feed_forward = FeedForward(embedding_dim=embedding_dim)
+        # layer normalization
+        self.layer_norm_1 = nn.LayerNorm(normalized_shape=embedding_dim)
+        self.layer_norm_2 = nn.LayerNorm(normalized_shape=embedding_dim)
 
     def forward(self, x) -> torch.Tensor:
-        x = self.multi_head_attention(x)
-        x = self.feed_forward(x)
+        x = x + self.multi_head_attention(self.layer_norm_1(x))  # x + => residual connection
+        x = x + self.feed_forward(self.layer_norm_2(x))
         return x
 
 
