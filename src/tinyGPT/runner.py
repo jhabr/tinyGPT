@@ -10,14 +10,22 @@ from src.tinyGPT.trainer import Trainer
 
 
 def main():
+    """
+    Main function to run the training and testing of the model.
+    """
+
     file_path = os.path.join(os.getcwd(), "..", "..", "data", "tiny_shakespeare.txt")
+
     tokenizer = Tokenizer()
+
     data_loader = DataLoader(file_path=file_path, tokenizer=tokenizer)
     data_loader.load_corpus()
     data_loader.create_datasets()
+
     model = TinyGPT(
         vocab_size=len(tokenizer.vocabulary), block_size=256, embedding_dim=384
     ).to(Backend.device())
+
     trainer = Trainer(
         model=model,
         data_loader=data_loader,

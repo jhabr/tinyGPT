@@ -81,7 +81,29 @@ class Tokenizer:
         ]
 
     def encode(self, text: str) -> list[int]:
+        """
+        Encodes a text into a list of integers.
+
+        Parameters:
+            text: str
+                the text to be encoded
+
+        Returns:
+            encoded_text: list[int]
+                the encoded text
+        """
         return [self.vocabulary.index(token) for token in text]
 
     def decode(self, tokens: list[int]) -> str:
+        """
+        Decodes a list of integers into a text.
+
+        Parameters:
+            tokens: list[int]
+                the tokens to be decoded
+
+        Returns:
+            decoded_text: str
+                the decoded text
+        """
         return "".join([self.vocabulary[token] for token in tokens])

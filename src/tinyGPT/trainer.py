@@ -14,12 +14,40 @@ class Trainer:
         optimizer: torch.optim.Optimizer,
         tokenizer: Tokenizer,
     ) -> None:
+        """
+        Trainer class to train the model.
+
+        Parameters:
+            model: TinyGPT
+                the model to be trained
+            data_loader: DataLoader
+                the data loader to load the data
+            optimizer: torch.optim.Optimizer
+                the optimizer to update the weights and biases
+            tokenizer: Tokenizer
+                the tokenizer to tokenize the text
+
+        Returns:
+            None
+        """
         self.model = model
         self.optimizer = optimizer
         self.data_loader = data_loader
         self.tokenizer = tokenizer
 
     def fit(self, iterations: int = 1_000, eval_interval: int = 500):
+        """
+        Fit the model.
+
+        Parameters:
+            iterations: int
+                the number of iterations to train the model
+            eval_interval: int
+                the interval to evaluate the model
+
+        Returns:
+            None
+        """
         print(f"[INFO] Trainable params: {round(sum([param.numel() for param in self.model.parameters()])/1e6, 1)}M")
         print("[INFO] Fitting model...")
 
@@ -49,6 +77,18 @@ class Trainer:
         print("[INFO] Done.")
 
     def _estimate_loss(self, eval_iterations: int = 200) -> dict:
+        """
+        Estimate the loss on the train and validation set.
+
+        Parameters:
+            eval_iterations: int
+                the number of iterations to estimate the loss
+
+        Returns:
+            out: dict
+                the estimated loss on the train and validation set
+        """
+
         out = {}
 
         self.model.eval()
@@ -67,6 +107,17 @@ class Trainer:
         return out
 
     def test(self, max_tokens: int = 500) -> str:
+        """
+        Test the model.
+
+        Parameters:
+            max_tokens: int
+                the maximum number of tokens to generate
+
+        Returns:
+            text: str
+                the generated text
+        """
         print("[INFO] Generating text...")
 
         context = torch.zeros((1, 1), dtype=torch.long, device=Backend.device())
