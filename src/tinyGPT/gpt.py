@@ -63,21 +63,21 @@ class AttentionHead(nn.Module):
             out: torch.Tensor
                 the output tensor
         """
-        B, T, C = x.shape  # (B:4, T:8, C:32)
+        B, T, C = x.shape  # (B, T, C)
         k = self.key(x)  # (B, T, C)
         q = self.key(x)  # (B, T, C)
 
         # compute attention scores == affinities
-        weights = q @ k.transpose(-2, -1)  # (B:4, T:8, 16) @ (B, 16, T) => (B, T, T)
+        weights = q @ k.transpose(-2, -1)  # (B, T, 16) @ (B, 16, T) => (B, T, T)
         # normalize
         weights *= self.head_size**-0.5
         weights = weights.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
-        weights = torch.softmax(weights, dim=-1)  # (B:4, T:8, T:8)
+        weights = torch.softmax(weights, dim=-1)  # (B, T, T)
         weights = self.dropout(weights)
 
         # value
-        v = self.value(x)  # (B:4, T:8, C:32)
-        out = weights @ v  # (B:4, T:8, C:32)
+        v = self.value(x)  # (B, T, C)
+        out = weights @ v  # (B, T, C)
 
         return out
 
@@ -321,7 +321,7 @@ class TinyGPT(nn.Module):
         positional_embeddings = self.position_embedding_table(
             torch.arange(T, device=self.device)
         )  # (T, C)
-        x = token_embeddings + positional_embeddings  # (B:4, T:8, C:32)
+        x = token_embeddings + positional_embeddings  # (B, T, C)
         x = self.blocks(x)
         x = self.layer_norm(x)
         logits = self.lm_head(x)  # (B, T, C)
