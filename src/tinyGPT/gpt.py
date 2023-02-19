@@ -3,6 +3,10 @@ from torch import nn
 
 from src.tinyGPT.backend import Backend
 
+"""
+Inspired by https://github.com/karpathy/nanoGPT
+"""
+
 
 class AttentionHead(nn.Module):
     def __init__(
