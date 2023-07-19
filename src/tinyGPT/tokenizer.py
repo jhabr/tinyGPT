@@ -1,5 +1,6 @@
 from typing import List
 
+
 class Tokenizer:
     def __init__(self) -> None:
         """

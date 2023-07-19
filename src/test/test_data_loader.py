@@ -10,12 +10,9 @@ from tinyGPT.src.tinyGPT.constants import ROOT_DIR
 
 
 class DataLoaderTests(unittest.TestCase):
-
     def setUp(self) -> None:
         self.data_loader = DataLoader(
-            file_path=os.path.join(
-                ROOT_DIR, "data", "tiny_shakespeare.txt"
-            ),
+            file_path=os.path.join(ROOT_DIR, "data", "tiny_shakespeare.txt"),
             tokenizer=Tokenizer(),
         )
         self.data_loader.load_corpus()

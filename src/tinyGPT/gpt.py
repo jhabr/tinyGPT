@@ -34,7 +34,6 @@ class AttentionHead(nn.Module):
         """
         super().__init__()
         self.head_size = head_size
-        self.head_size = head_size
         self.block_size = block_size
         self.key = nn.Linear(
             in_features=embedding_dim, out_features=head_size, bias=False
