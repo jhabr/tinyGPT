@@ -1,15 +1,20 @@
 import os
 import unittest
 
+import torch
+
 from src.tinyGPT.data_loader import DataLoader
 from src.tinyGPT.tokenizer import Tokenizer
+from tinyGPT.src.tinyGPT.backend import Backend
+from tinyGPT.src.tinyGPT.constants import ROOT_DIR
 
 
 class DataLoaderTests(unittest.TestCase):
+
     def setUp(self) -> None:
         self.data_loader = DataLoader(
             file_path=os.path.join(
-                os.getcwd(), "data", "tiny_shakespeare.txt"
+                ROOT_DIR, "data", "tiny_shakespeare.txt"
             ),
             tokenizer=Tokenizer(),
         )
@@ -29,7 +34,7 @@ class DataLoaderTests(unittest.TestCase):
 
     def test_get_batch(self) -> None:
         self.data_loader.create_datasets()
-        x, y = self.data_loader.get_batch(split="train")
+        x, y = self.data_loader.get_batch(split="train", block_size=8, batch_size=4)
 
         # e.g.
         # tensor([[52,  1, 58, 56, 47, 59, 51, 54],
@@ -51,4 +56,9 @@ class DataLoaderTests(unittest.TestCase):
         self.assertEqual((4, 8), y.shape)
 
     def test_device(self) -> None:
-        self.assertEqual("mps", self.data_loader.device.type)
+        if torch.backends.mps.is_available():
+            self.assertEqual("mps", Backend.device().type)
+        if torch.cuda.is_available():
+            self.assertEqual("cuda", Backend.device().type)
+        else:
+            self.assertEqual("cpu", Backend.device().type)

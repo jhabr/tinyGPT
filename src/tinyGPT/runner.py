@@ -7,6 +7,7 @@ from src.tinyGPT.data_loader import DataLoader
 from src.tinyGPT.gpt import TinyGPT
 from src.tinyGPT.tokenizer import Tokenizer
 from src.tinyGPT.trainer import Trainer
+from tinyGPT.src.tinyGPT.constants import ROOT_DIR
 
 
 def main():
@@ -14,7 +15,7 @@ def main():
     Main function to run the training and testing of the model.
     """
 
-    file_path = os.path.join(os.getcwd(), "data", "tiny_shakespeare.txt")
+    file_path = os.path.join(ROOT_DIR, "data", "tiny_shakespeare.txt")
 
     tokenizer = Tokenizer()
 
