@@ -48,7 +48,9 @@ class Trainer:
         Returns:
             None
         """
-        print(f"[INFO] Trainable params: {round(sum([param.numel() for param in self.model.parameters()])/1e6, 1)}M")
+        print(
+            f"[INFO] Trainable params: {round(sum([param.numel() for param in self.model.parameters()])/1e6, 1)}M"
+        )
         print("[INFO] Fitting model...")
 
         for iteration in range(iterations):
