@@ -1,12 +1,12 @@
 import os
 import unittest
 
-import torch
+import torch.backends.mps
 
 from src.tinyGPT.data_loader import DataLoader
 from src.tinyGPT.tokenizer import Tokenizer
-from tinyGPT.src.tinyGPT.backend import Backend
-from tinyGPT.src.tinyGPT.constants import ROOT_DIR
+from src.tinyGPT.backend import Backend
+from src.tinyGPT.constants import ROOT_DIR
 
 
 class DataLoaderTests(unittest.TestCase):
@@ -55,7 +55,7 @@ class DataLoaderTests(unittest.TestCase):
     def test_device(self) -> None:
         if torch.backends.mps.is_available():
             self.assertEqual("mps", Backend.device().type)
-        if torch.cuda.is_available():
+        elif torch.cuda.is_available():
             self.assertEqual("cuda", Backend.device().type)
         else:
             self.assertEqual("cpu", Backend.device().type)

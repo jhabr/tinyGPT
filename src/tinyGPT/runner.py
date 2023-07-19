@@ -7,7 +7,7 @@ from src.tinyGPT.data_loader import DataLoader
 from src.tinyGPT.gpt import TinyGPT
 from src.tinyGPT.tokenizer import Tokenizer
 from src.tinyGPT.trainer import Trainer
-from tinyGPT.src.tinyGPT.constants import ROOT_DIR
+from src.tinyGPT.constants import ROOT_DIR
 
 
 def main():
