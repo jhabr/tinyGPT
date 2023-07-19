@@ -1,3 +1,5 @@
+from typing import List
+
 class Tokenizer:
     def __init__(self) -> None:
         """
@@ -80,7 +82,7 @@ class Tokenizer:
             "z",
         ]
 
-    def encode(self, text: str) -> list[int]:
+    def encode(self, text: str) -> List[int]:
         """
         Encodes a text into a list of integers.
 
@@ -94,7 +96,7 @@ class Tokenizer:
         """
         return [self.vocabulary.index(token) for token in text]
 
-    def decode(self, tokens: list[int]) -> str:
+    def decode(self, tokens: List[int]) -> str:
         """
         Decodes a list of integers into a text.
 

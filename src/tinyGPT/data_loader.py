@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Tuple
 
 import torch
 
@@ -43,7 +43,7 @@ class DataLoader:
 
     def create_datasets(
         self, train_split_size: float = 0.9
-    ) -> tuple[torch.Tensor, torch.Tensor]:
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Creates the training and validation datasets.
 
@@ -69,7 +69,7 @@ class DataLoader:
         split: str = Union["train", "valid"],
         block_size: int = 256,
         batch_size: int = 64,
-    ) -> tuple[torch.Tensor, torch.Tensor]:
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Returns the next batch of data.
 
