@@ -14,7 +14,7 @@ def main():
     Main function to run the training and testing of the model.
     """
 
-    file_path = os.path.join(os.getcwd(), "..", "..", "data", "tiny_shakespeare.txt")
+    file_path = os.path.join(os.getcwd(), "data", "tiny_shakespeare.txt")
 
     tokenizer = Tokenizer()
 

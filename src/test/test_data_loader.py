@@ -9,7 +9,7 @@ class DataLoaderTests(unittest.TestCase):
     def setUp(self) -> None:
         self.data_loader = DataLoader(
             file_path=os.path.join(
-                os.getcwd(), "..", "..", "data", "tiny_shakespeare.txt"
+                os.getcwd(), "data", "tiny_shakespeare.txt"
             ),
             tokenizer=Tokenizer(),
         )
