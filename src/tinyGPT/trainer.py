@@ -1,3 +1,5 @@
+import logging
+
 import torch.optim
 
 from src.tinyGPT.backend import Backend
@@ -48,10 +50,10 @@ class Trainer:
         Returns:
             None
         """
-        print(
-            f"[INFO] Trainable params: {round(sum([param.numel() for param in self.model.parameters()])/1e6, 1)}M"
+        logging.info(
+            f"Trainable params: {round(sum([param.numel() for param in self.model.parameters()])/1e6, 1)}M"
         )
-        print("[INFO] Fitting model...")
+        logging.info("Fitting model...")
 
         for iteration in range(iterations):
             x_batch, y_batch = self.data_loader.get_batch(split="train")
@@ -71,12 +73,12 @@ class Trainer:
             # print loss every 500 iteration
             if iteration % eval_interval == 0 or iter == iterations - 1:
                 loss = self._estimate_loss()
-                print(
-                    f"[INFO]: step {iteration} - "
+                logging.info(
+                    f"step {iteration} - "
                     f"train loss: {round(loss['train'], 4)}, "
                     f"val loss: {round(loss['valid'], 4)}"
                 )
-        print("[INFO] Done.")
+        logging.info("Done.")
 
     def _estimate_loss(self, eval_iterations: int = 200) -> dict:
         """
@@ -120,12 +122,12 @@ class Trainer:
             text: str
                 the generated text
         """
-        print("[INFO] Generating text...")
+        logging.info("Generating text...")
 
         context = torch.zeros((1, 1), dtype=torch.long, device=Backend.device())
         tokens = self.model.generate(index=context, max_tokens=max_tokens)[0].tolist()
         text = self.tokenizer.decode(tokens=tokens)
 
-        print(f"[INFO] Generated text:\n{text}")
+        logging.info(f"Generated text:\n{text}")
 
         return text
