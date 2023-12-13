@@ -4,3 +4,7 @@ A tiny decoder only transformer as described in the [Attention Is All You Need](
 ## LLM Optimizations
 - residual connections
 - layer normalization
+
+## Credits
+
+Inspired by the work of A. Karpathy: https://github.com/karpathy/minGPT.
